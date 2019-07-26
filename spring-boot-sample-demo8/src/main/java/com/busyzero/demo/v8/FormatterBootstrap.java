@@ -13,7 +13,8 @@ import java.util.Map;
 public class FormatterBootstrap {
 
     public static void main(String[] args) {
-        ConfigurableApplicationContext context = new SpringApplicationBuilder(FormatterBootstrap.class).web(WebApplicationType.NONE).run(args);
+        ConfigurableApplicationContext context = new SpringApplicationBuilder(FormatterBootstrap.class).web(WebApplicationType.NONE)
+                .properties("formatter.enable=true").run(args);
         Map<String, Object> data = new HashMap<>();
         data.put("name", "东东");
         Formatter  formatter = context.getBean(Formatter.class);

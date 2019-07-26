@@ -4,11 +4,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.busyzero.demo</groupId>
-	<artifactId>spring-boot-sample-demo8</artifactId>
+	<artifactId>spring-boot-sample-demo9</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>spring-boot-sample-demo8</name>
+	<name>spring-boot-sample-demo9</name>
 	<description>Demo project for Spring Boot</description>
 
 	<parent>
@@ -33,11 +33,11 @@
 			<optional>true</optional>
 		</dependency>
 
-		<dependency>
-			<groupId>com.busyzero.demo</groupId>
-			<artifactId>formatter-spring-boot-starter</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
+		<!--<dependency>-->
+			<!--<groupId>com.busyzero.demo</groupId>-->
+			<!--<artifactId>formatter-spring-boot-starter</artifactId>-->
+			<!--<version>0.0.1-SNAPSHOT</version>-->
+		<!--</dependency>-->
 
 		<!--<dependency>-->
 			<!--<groupId>com.fasterxml.jackson.core</groupId>-->
