@@ -1,5 +1,5 @@
 org.springframework.context.ApplicationContextInitializer=com.busyzero.demo.v9.MyApplicationContextInitializer
 org.springframework.context.ApplicationListener=com.busyzero.demo.v9.MyApplicationListener,com.busyzero.demo.v9.ContextRefreshedEventListener
 org.springframework.boot.SpringApplicationRunListener=com.busyzero.demo.v9.MySpringApplicationRunListener
-org.springframework.boot.SpringBootExceptionReporter=com.busyzero.demo.v9.MySpringBootExceptionReporter
-org.springframework.boot.diagnostics.FailureAnalyzer=com.busyzero.demo.v9.MyFailureAnalyzer
+#org.springframework.boot.SpringBootExceptionReporter=com.busyzero.demo.v9.MySpringBootExceptionReporter
+#org.springframework.boot.diagnostics.FailureAnalyzer=com.busyzero.demo.v9.MyFailureAnalyzer
