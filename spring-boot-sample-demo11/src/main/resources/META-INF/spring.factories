@@ -1,0 +1,1 @@
+com.busyzero.demo.v11.EnableKrAutoConfiguration=com.busyzero.demo.v11.KrAutoConfiguration,com.busyzero.demo.v11.MyAuthConfiguration
