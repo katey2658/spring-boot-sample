@@ -1,5 +1,6 @@
 package com.busyzero.demo.v11;
 
+import com.busyzero.demo.formatter.Formatter;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -32,6 +33,9 @@ public class SpringApplicationBootstrap {
 
         TwoBean twoBean = context.getBean(TwoBean.class);
         System.out.println(twoBean.getName());
+
+        Formatter formatter = context.getBean(Formatter.class);
+        System.out.println(formatter.format("\n哈哈哈，这是我的formatter"));
 
         context.close();
     }

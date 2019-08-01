@@ -1,1 +1,1 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.busyzero.demo.formatter.FormatterAutoConfiguration
+com.busyzero.demo.v11.EnableKrAutoConfiguration=com.busyzero.demo.formatter.FormatterAutoConfiguration
