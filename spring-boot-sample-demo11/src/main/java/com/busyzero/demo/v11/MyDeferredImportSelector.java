@@ -12,8 +12,9 @@ public class MyDeferredImportSelector implements DeferredImportSelector {
 
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         List<String> loadFactoryNames = SpringFactoriesLoader.loadFactoryNames(EnableKrAutoConfiguration.class, classLoader);
-        return loadFactoryNames.toArray(new String[loadFactoryNames.size()]);
 
-//        return new String[]{"com.busyzero.demo.v11.MyAuthConfiguration", "com.busyzero.demo.v11.KrAutoConfiguration"};
+        loadFactoryNames.add("com.busyzero.demo.v11..SelectedBean");
+
+        return loadFactoryNames.toArray(new String[loadFactoryNames.size()]);
     }
 }
