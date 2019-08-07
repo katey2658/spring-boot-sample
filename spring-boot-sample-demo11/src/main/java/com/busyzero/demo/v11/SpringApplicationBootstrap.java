@@ -2,6 +2,7 @@ package com.busyzero.demo.v11;
 
 import com.busyzero.demo.formatter.Formatter;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.boot.web.server.WebServer;
 import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext;
 import org.springframework.boot.web.servlet.context.ServletWebServerInitializedEvent;
@@ -9,6 +10,7 @@ import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.AnnotatedBeanDefinitionReader;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigRegistry;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -33,13 +35,16 @@ public class SpringApplicationBootstrap {
         MutablePropertySources sources = environment.getPropertySources();
         sources.addFirst(new SimpleCommandLinePropertySource(args));
 
-        AbstractApplicationContext context = new AnnotationConfigApplicationContext();
-        context = new AnnotationConfigServletWebServerApplicationContext();
+        ConfigurableApplicationContext context = new AnnotationConfigApplicationContext();
+//        context = new AnnotationConfigServletWebServerApplicationContext();
         context.setEnvironment(environment);
 
         applyInitializerList(context);
 
-        ((AnnotationConfigRegistry)context).register(SpringApplicationBootstrap.class);
+//        ((AnnotationConfigRegistry)context).register(SpringApplicationBootstrap.class);
+        BeanDefinitionRegistry registry = (BeanDefinitionRegistry) context.getBeanFactory();
+        AnnotatedBeanDefinitionReader beanDefinitionReader = new AnnotatedBeanDefinitionReader(registry);
+        beanDefinitionReader.registerBean(SpringApplicationBootstrap.class);
         context.refresh();
 
         SelectedBean bean = context.getBean(SelectedBean.class);
@@ -65,65 +70,65 @@ public class SpringApplicationBootstrap {
     }
 
 
-    public static class KrWebServerApplicationContext  extends GenericWebApplicationContext implements ConfigurableApplicationContext{
-
-        @Override
-        public void refresh() throws BeansException, IllegalStateException {
-            try {
-                super.refresh();
-            }
-            catch (RuntimeException ex) {
-                stopAndReleaseWebServer();
-                throw ex;
-            }
-        }
-
-
-        @Override
-        protected void onRefresh() {
-            super.onRefresh();
-            try {
-                createWebServer();
-            }
-            catch (Throwable ex) {
-                throw new ApplicationContextException("Unable to start web server", ex);
-            }
-        }
-
-        @Override
-        protected void finishRefresh() {
-            super.finishRefresh();
-            WebServer webServer = startWebServer();
-            if (webServer != null) {
-                publishEvent(new ServletWebServerInitializedEvent(webServer, this));
-            }
-        }
-
-        @Override
-        protected void onClose() {
-            super.onClose();
-            stopAndReleaseWebServer();
-        }
-
-        private void createWebServer() {
-            WebServer webServer = new TomcatWebServer();
-            ServletContext servletContext = getServletContext();
-            if (webServer == null && servletContext == null) {
-                ServletWebServerFactory factory = getWebServerFactory();
-                this.webServer = factory.getWebServer(getSelfInitializer());
-            }
-            else if (servletContext != null) {
-                try {
-                    getSelfInitializer().onStartup(servletContext);
-                }
-                catch (ServletException ex) {
-                    throw new ApplicationContextException("Cannot initialize servlet context",
-                            ex);
-                }
-            }
-            initPropertySources();
-        }
-    }
+//    public static class KrWebServerApplicationContext  extends GenericWebApplicationContext implements ConfigurableApplicationContext{
+//
+//        @Override
+//        public void refresh() throws BeansException, IllegalStateException {
+//            try {
+//                super.refresh();
+//            }
+//            catch (RuntimeException ex) {
+//                stopAndReleaseWebServer();
+//                throw ex;
+//            }
+//        }
+//
+//
+//        @Override
+//        protected void onRefresh() {
+//            super.onRefresh();
+//            try {
+//                createWebServer();
+//            }
+//            catch (Throwable ex) {
+//                throw new ApplicationContextException("Unable to start web server", ex);
+//            }
+//        }
+//
+//        @Override
+//        protected void finishRefresh() {
+//            super.finishRefresh();
+//            WebServer webServer = startWebServer();
+//            if (webServer != null) {
+//                publishEvent(new ServletWebServerInitializedEvent(webServer, this));
+//            }
+//        }
+//
+//        @Override
+//        protected void onClose() {
+//            super.onClose();
+//            stopAndReleaseWebServer();
+//        }
+//
+//        private void createWebServer() {
+//            WebServer webServer = new TomcatWebServer();
+//            ServletContext servletContext = getServletContext();
+//            if (webServer == null && servletContext == null) {
+//                ServletWebServerFactory factory = getWebServerFactory();
+//                this.webServer = factory.getWebServer(getSelfInitializer());
+//            }
+//            else if (servletContext != null) {
+//                try {
+//                    getSelfInitializer().onStartup(servletContext);
+//                }
+//                catch (ServletException ex) {
+//                    throw new ApplicationContextException("Cannot initialize servlet context",
+//                            ex);
+//                }
+//            }
+//            initPropertySources();
+//        }
+//    }
 
 
 }

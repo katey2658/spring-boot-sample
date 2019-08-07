@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 public class SelectedBean {
 
-    @Value("${spring.profiles.active}")
+    @Value("${spring.profiles.active:dev}")
     private String serverName;
 
     public String getDesc() {
