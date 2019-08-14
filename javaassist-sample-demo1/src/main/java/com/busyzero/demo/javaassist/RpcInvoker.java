@@ -1,7 +1,19 @@
 package com.busyzero.demo.javaassist;
 
-public class RpcInvoker implements Invoker{
+import java.util.concurrent.ThreadLocalRandom;
+
+public class RpcInvoker<T> implements Invoker<T> {
     private String name;
+    private Class<T> iface;
+
+    @Override
+    public Class getInterface() {
+        return iface.getClass();
+    }
+
+    public void setIface(Class<T> iface) {
+        this.iface = iface;
+    }
 
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
@@ -17,5 +29,22 @@ public class RpcInvoker implements Invoker{
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public URL getUrl() {
+        URL url = new URL();
+        url.setWeight(ThreadLocalRandom.current().nextInt(1000));
+        return url;
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return true;
+    }
+
+    @Override
+    public void destroy() {
+
     }
 }

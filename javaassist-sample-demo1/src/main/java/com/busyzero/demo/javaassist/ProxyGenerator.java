@@ -6,24 +6,47 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 public class ProxyGenerator {
     private static final AtomicInteger counter = new AtomicInteger(1);
 
     private static ConcurrentHashMap<Class<?>, Object> proxyInstanceCache = new ConcurrentHashMap<>();
+    private static final Map<ClassLoader, ClassPool> POOL_MAP = new ConcurrentHashMap<ClassLoader, ClassPool>(); //ClassLoader - ClassPool
+    private ClassPool mPool;
+    private ProxyGenerator(ClassPool pool) {
+        this.mPool = pool;
+    }
 
-    public static Object newProxyInstance(ClassLoader classLoader, Class<?> targetClass, InvocationHandler invocationHandler)
+    public static ProxyGenerator newInstance(ClassLoader loader) {
+        return new ProxyGenerator(getClassPool(loader));
+    }
+
+    public static ClassPool getClassPool(ClassLoader loader) {
+        if (loader == null) {
+            return ClassPool.getDefault();
+        }
+
+        ClassPool pool = POOL_MAP.get(loader);
+        if (pool == null) {
+            pool = new ClassPool(true);
+            pool.appendClassPath(new LoaderClassPath(loader));
+            POOL_MAP.put(loader, pool);
+        }
+        return pool;
+    }
+
+    public Object newProxyInstance(Class<?>[] targetClass, InvocationHandler invocationHandler)
             throws Exception {
         if(proxyInstanceCache.containsKey(targetClass)){
             return proxyInstanceCache.get(targetClass);
         }
 
-        ClassPool pool = ClassPool.getDefault();
-
-        String qualifiedName = generateClassName(targetClass);
-        CtClass proxy = pool.makeClass(qualifiedName);
+        String qualifiedName = generateClassName(targetClass[0]);
+        CtClass proxy = mPool.makeClass(qualifiedName);
 
         CtField mf = CtField.make("public static java.lang.reflect.Method[] methods;", proxy);
         proxy.addField(mf);
@@ -31,19 +54,19 @@ public class ProxyGenerator {
         CtField hf = CtField.make("private " + InvocationHandler.class.getName() + " handler;", proxy);
         proxy.addField(hf);
 
-        CtConstructor constructor = new CtConstructor(new CtClass[]{pool.get(InvocationHandler.class.getName())}, proxy);
+        CtConstructor constructor = new CtConstructor(new CtClass[]{mPool.get(InvocationHandler.class.getName())}, proxy);
         constructor.setBody("this.handler=$1;");
         constructor.setModifiers(Modifier.PUBLIC);
         proxy.addConstructor(constructor);
 
         proxy.addConstructor(CtNewConstructor.defaultConstructor(proxy));
 
-        List<Class<?>> interfaces = getAllInterfaces(targetClass);
+        List<Class<?>> interfaces = Arrays.asList(targetClass);
 
         List<Method> methods = new ArrayList<>();
 
         for (Class<?> cls : interfaces) {
-            CtClass ctClass = pool.get(cls.getName());
+            CtClass ctClass = mPool.get(cls.getName());
             proxy.addInterface(ctClass);
 
             Method[] arr = cls.getDeclaredMethods();
@@ -97,15 +120,11 @@ public class ProxyGenerator {
         Class<?> proxyClass = proxy.toClass();
         proxyClass.getField("methods").set(null, methods.toArray(new Method[0]));
         Object instance = proxyClass.getConstructor(InvocationHandler.class).newInstance(invocationHandler);
-        proxyInstanceCache.put(targetClass, instance);
+        Stream.of(targetClass).forEach(item -> proxyInstanceCache.put(item, instance));
         return instance;
     }
 
-    private static List<Class<?>> getAllInterfaces(Class<?> targetClass) {
-        return Arrays.asList(targetClass);
-    }
-
-    private  static String getParameterType(Class<?> c) {
+    private String getParameterType(Class<?> c) {
         if(c.isArray()) {   //数组类型
             StringBuilder sb = new StringBuilder();
             do {
@@ -118,7 +137,7 @@ public class ProxyGenerator {
         return c.getName();
     }
 
-    private  static  String generateClassName(Class<?> type) {
+    private  String generateClassName(Class<?> type) {
         return String.format("%s$Proxy%d", type.getName(), counter.getAndIncrement());
     }
 }

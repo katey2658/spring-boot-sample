@@ -2,30 +2,14 @@ package com.busyzero.demo.javaassist;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
-public class RandomCluster implements Invoker {
+public class RandomCluster {
 
-    @Override
-    public Result invoke(Invocation invocation) throws RpcException {
-        return doInvoke(invocation);
-    }
-
-    private Result doInvoke(Invocation invocation) {
+    public Invoker join() throws RpcException {
         List<Invoker> invokerList = doList();
-        Invoker invoker =  doSelect(invokerList);
-        return invoker.invoke(invocation);
-    }
-
-    private Invoker doSelect(List<Invoker> invokerList) {
-        if (invokerList == null || invokerList.size() == 0) {
-            return null;
-        }
-
-        int size = invokerList.size();
-        ThreadLocalRandom random = ThreadLocalRandom.current ();
-        int index = random.nextInt(size );
-        return invokerList.get(index);
+        LoadBalance loadBalance = new RandomLoadBalance();
+        Invoker invoker =  loadBalance.select(invokerList, null, null);
+        return invoker;
     }
 
     private List<Invoker> doList() {
