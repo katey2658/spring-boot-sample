@@ -24,7 +24,7 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
 
     @Override
     public Class<T> getInterface() {
-        return null;
+        return type;
     }
 
     @Override
@@ -42,12 +42,12 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
 
     @Override
     public URL getUrl() {
-        return null;
+        return new URL();
     }
 
     @Override
     public boolean isAvailable() {
-        return false;
+        return true;
     }
 
     @Override

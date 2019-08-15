@@ -8,29 +8,37 @@ public class AppMain {
         SayService sayService = new SayService() {
             @Override
             public String sayHello(String sayHello) {
+                System.out.println(sayHello);
                 return "哈哈哈";
             }
 
             @Override
             public String sayBye(String sayBye) throws Exception {
+                System.out.println(sayBye);
                 return "黑河";
             }
 
             @Override
             public String say(String say) throws Exception {
+                System.out.println(say);
                 return "😁";
             }
         };
 
-        Invoker<SayService> invoker = proxyFactory.getInvoker(sayService, SayService.class, null);
+        URL url = new URL();
+        Invoker<SayService> invoker = proxyFactory.getInvoker(sayService, SayService.class, url);
+
         Invocation invocation = new Invocation();
-        invocation.setMethodName("sayHello");
+        invocation.setMethodName("say");
         invocation.setArguments(new Object[]{"说话"});
         invocation.setParameterTypes(new Class[]{String.class});
         System.out.println(invoker.invoke(invocation).getData());
 
+        SayService proxyService = proxyFactory.getProxy(invoker);
+        System.out.println(proxyService.sayHello("hello"));
 
-//
+
+
 //        RpcInvoker<SayService> rpcInvoker = new RpcInvoker<>();
 //        rpcInvoker.setIface(SayService.class);
 //
