@@ -2,19 +2,39 @@ package com.busyzero.sample.demo;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Hello world!
  */
+@CrossOrigin()
 @RestController
 @SpringBootApplication
 public class App {
 
     @RequestMapping("/")
-    public String index(){
+    public String index() {
         return "Hello Json";
+    }
+
+    @RequestMapping(value = "/data", method = RequestMethod.GET)
+    public Map getDat() {
+        Map<String, Object> data1 = new HashMap<>();
+        data1.put("name", 1001);
+        data1.put("setup", "我是setup");
+        data1.put("punchline", "我是punchline");
+        List<Map> mapList = new ArrayList<>();
+        mapList.add(data1);
+        return data1;
     }
 
 
