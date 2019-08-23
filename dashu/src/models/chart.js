@@ -1,11 +1,10 @@
-import request from '../util/request';
 const delay = (millisecond) => {
     return new Promise((resolve) => {
         setTimeout(resolve, millisecond);
     });
 };
 export default {
-    namespace : 'cards',
+    namespace : 'charts',
     state     : {
         cardsList: [ ]
     },
@@ -28,7 +27,7 @@ export default {
                 }
             ];
             const { call, put } = sagaEffects;
-            yield call(delay, 1000);
+            yield call(delay, 3000);
             yield put({ type: 'initList', payload: listData });
         }
     },

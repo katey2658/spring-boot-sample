@@ -32,13 +32,13 @@ export default {
             { path: '/dashboard/workplace', component: 'Dashboard/Workplace' }
           ]
         },
-        { 
-          path: '/puzzlecards', 
-          component: './puzzlecards' 
-        },
+
         {
-          path: '/list',
-          component: '../page/list'
+          path: '/datalist',
+          routes: [
+            { path: '/datalist/list', component: 'DataList/index' },
+            { path: '/datalist/puzzlecards', component: 'DataList/puzzlecards' },
+          ]
         }
       ]
     },

@@ -1,6 +1,7 @@
 import React from 'react';
 import {Table} from 'antd';
 import { connect } from 'dva';
+import myStyles from './index.css';
 
 function mapStateToProps(state) {
     return {
@@ -26,7 +27,7 @@ class List extends React.Component{
         {
             title: '链接',
             dataIndex: 'url',
-            render: value => <a href={value}>{value}</a>,
+            render: value => <a className={myStyles.hello} href={value}>{value}</a>,
         },
     ];
     componentDidMount() {
