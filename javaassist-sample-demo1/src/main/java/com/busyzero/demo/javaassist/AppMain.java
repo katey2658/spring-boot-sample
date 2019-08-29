@@ -1,10 +1,15 @@
 package com.busyzero.demo.javaassist;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class AppMain {
     public static void main(String[] args) {
-        ProxyFactory proxyFactory = new JavassistProxyFactory();
+        Map<String, Invoker<?>> invokerMap = new HashMap<>();
+        NettyServer nettyServer = new NettyServer(invokerMap);
 
+        ProxyFactory proxyFactory = new JavassistProxyFactory();
         SayService sayService = new SayService() {
             @Override
             public String sayHello(String sayHello) {
@@ -27,15 +32,19 @@ public class AppMain {
 
         URL url = new URL();
         Invoker<SayService> invoker = proxyFactory.getInvoker(sayService, SayService.class, url);
+        invokerMap.put(SayService.class.getName(), invoker);
+        nettyServer.start();
 
-        Invocation invocation = new Invocation();
-        invocation.setMethodName("say");
-        invocation.setArguments(new Object[]{"说话"});
-        invocation.setParameterTypes(new Class[]{String.class});
-        System.out.println(invoker.invoke(invocation).getData());
 
-        SayService proxyService = proxyFactory.getProxy(invoker);
-        System.out.println(proxyService.sayHello("hello"));
+//        Invocation invocation = new Invocation();
+//        invocation.setMethodName("say");
+//        invocation.setArguments(new Object[]{"说话"});
+//        invocation.setParameterTypes(new Class[]{String.class});
+//        invocation.setServiceName(sayService.getClass().getName());
+//
+//        System.out.println(invoker.invoke(invocation).getData());
+//        SayService proxyService = proxyFactory.getProxy(invoker);
+//        System.out.println(proxyService.sayHello("hello"));
 
 
 

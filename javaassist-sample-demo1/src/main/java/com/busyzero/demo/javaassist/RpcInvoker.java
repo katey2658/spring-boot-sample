@@ -8,7 +8,7 @@ public class RpcInvoker<T> implements Invoker<T> {
 
     @Override
     public Class getInterface() {
-        return iface.getClass();
+        return iface;
     }
 
     public void setIface(Class<T> iface) {
