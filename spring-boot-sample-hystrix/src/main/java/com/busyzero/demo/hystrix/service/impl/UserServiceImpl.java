@@ -1,6 +1,7 @@
 package com.busyzero.demo.hystrix.service.impl;
 
 import com.busyzero.demo.hystrix.service.UserService;
+import com.busyzero.demo.hystrix.utils.UserContextHolder;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import org.springframework.stereotype.Service;
@@ -18,10 +19,10 @@ public class UserServiceImpl implements UserService {
             commandProperties = {
                     @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "1000"),
                     @HystrixProperty(name = "circuitBreaker.requestVolumeThreshold", value = "10"),  //10s 内必须调用数量
-                    @HystrixProperty(name = "circuitBreaker.errorThresholdLPercentage", value = "75"), // 超时，异常 ，或者500 百分比
-                    @HystrixProperty(name = "circuitBreaker.sleepWindowInMillseconds", value = "7000"), // 在尝试重新调用之前的窗口期
-                    @HystrixProperty(name = "metrics.rollingStats.timeInMillseconds", value = "15000"), // 监视服务调用的窗口大小
-                    @HystrixProperty(name = "metrics.rollingStats.numBuckets", value = "5"), // 收集信息的大小
+//                    @HystrixProperty(name = "circuitBreaker.errorThresholdLPercentage", value = "75"), // 超时，异常 ，或者500 百分比
+//                    @HystrixProperty(name = "circuitBreaker.sleepWindowInMillseconds", value = "7000"), // 在尝试重新调用之前的窗口期
+//                    @HystrixProperty(name = "metrics.rollingStats.timeInMillseconds", value = "15000"), // 监视服务调用的窗口大小
+//                    @HystrixProperty(name = "metrics.rollingStats.numBuckets", value = "5"), // 收集信息的大小
             })
     @Override
     public String getName() {
@@ -34,7 +35,8 @@ public class UserServiceImpl implements UserService {
                 e.printStackTrace();
             }
         }
-        return "hello";
+        return UserContextHolder.curUserContenxt().getUserId();
+
     }
 
     private String getFallbackName() {
