@@ -1,0 +1,17 @@
+server:
+  port: 9999
+
+spring:
+  application:
+    name: spring-cloud-stream-consumer
+  cloud:
+    stream:
+      bindings:
+        inbound:
+          destination: org-change
+          content-type: application/json
+          group: s1
+        binder:
+          brokers: localhost
+          zkNodes: localhost
+

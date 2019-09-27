@@ -1,0 +1,24 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: spring-cloud-stream
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: 172.16.23.30:9092
+          zk-nodes: 172.16.23.30:2181
+      bindings:
+        output:
+          destination: org-change
+          content-type: application/json
+          auto-add-partitions: true
+          auto-create-topics: true
+          group: s1
+          min-partition-count: 1
+          producer:
+            partitionCount: 1
+
+
