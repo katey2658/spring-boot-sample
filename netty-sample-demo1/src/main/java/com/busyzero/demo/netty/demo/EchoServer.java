@@ -25,10 +25,11 @@ public class EchoServer {
             b.group(group)
                     .channel(NioServerSocketChannel.class)
                     .localAddress(new InetSocketAddress(port))
+
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(serverHandler);
+                            ch.pipeline().fireChannelActive().addLast(serverHandler);
                         }
                     });
             ChannelFuture channelFuture = b.bind().sync();
