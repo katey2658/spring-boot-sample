@@ -1,12 +1,21 @@
 package com.busyzero.demo.netty.live;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import com.busyzero.demo.netty.live.dto.Response;
+import com.busyzero.demo.netty.live.entity.Client;
+import com.busyzero.demo.netty.live.service.MessageService;
+import com.busyzero.demo.netty.live.service.RequestService;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.*;
 import io.netty.channel.group.ChannelGroup;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
-import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.websocketx.*;
+import io.netty.util.CharsetUtil;
+import io.netty.util.concurrent.GlobalEventExecutor;
+import org.json.JSONObject;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -17,16 +26,154 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
 
     private static final String HTTP_REQUEST_STRING = "request";
 
-    private WebSocketClientHandshaker handshaker;
+    private Client client;
+
+    private WebSocketServerHandshaker handshaker;
 
 
     @Override
     protected void messageReceived(ChannelHandlerContext channelHandlerContext, Object o) throws Exception {
         if (o instanceof FullHttpRequest) {
-
+            handleHttpRequest(channelHandlerContext, (FullHttpRequest) o);
         } else if (o instanceof WebSocketFrame) {
-
+            handleWebSocketFrame(channelHandlerContext, (WebSocketFrame) o);
         }
 
     }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        cause.printStackTrace();
+        ctx.close();
+    }
+
+    @Override
+    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+        Channel incoming = ctx.channel();
+        System.out.println("收到" + incoming.remoteAddress() + "握手请求") ;
+    }
+
+    @Override
+    public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+        if (client != null && channelGroupMap.containsKey(client.getRoomId())) {
+            channelGroupMap.get(client.getRoomId()).remove(ctx.channel());
+        }
+    }
+
+    @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+        ctx.flush();
+    }
+
+    private void handleHttpRequest(ChannelHandlerContext ctx, FullHttpRequest req) {
+         // handle a bad request
+        if (!req.decoderResult().isSuccess()) {
+            sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST));
+            return;
+        }
+
+        // Allow only Get methods
+        if (req.method() != HttpMethod.GET) {
+            sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.FORBIDDEN));
+            return;
+        }
+
+        if ("/favicon.ico".equals(req.uri()) || ("/".equals(req.uri()))) {
+            sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND));
+            return;
+        }
+
+        QueryStringDecoder queryStringDecoder = new QueryStringDecoder(req.uri());
+        Map<String, List<String>> parameters = queryStringDecoder.parameters();
+        if (parameters.size() == 0 || !parameters.containsKey(HTTP_REQUEST_STRING)) {
+            System.err.printf(HTTP_REQUEST_STRING + "参数不可缺省");
+            sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,  HttpResponseStatus.NOT_FOUND));
+            return;
+        }
+
+        client = RequestService.clientRegister(parameters.get(HTTP_REQUEST_STRING).get(0));
+        if (client.getRoomId() == 0) {
+            System.err.printf("房间号不可或缺");
+            sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,  HttpResponseStatus.NOT_FOUND));
+            return;
+        }
+
+        if (!channelGroupMap.containsKey(client.getRoomId())) {
+            channelGroupMap.put(client.getRoomId(), new DefaultChannelGroup(GlobalEventExecutor.INSTANCE));
+        }
+        channelGroupMap.get(client.getRoomId()).add(ctx.channel());
+
+        WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(getWebSocketLocation(req), null, true);
+        handshaker = wsFactory.newHandshaker(req);
+        if (handshaker == null) {
+            WebSocketServerHandshakerFactory.sendUnsupportedVersionResponse(ctx.channel());
+        } else {
+            ChannelFuture channelFuture = handshaker.handshake(ctx.channel(), req);
+
+            // 握手成功， 业务逻辑
+            if (channelFuture.isSuccess()) {
+                if (client.getId() == 0) {
+                    System.out.println(ctx.channel() + " 游客");
+                    return;
+                }
+            }
+        }
+    }
+
+    private void sendHttpResponse(ChannelHandlerContext ctx, FullHttpRequest req, FullHttpResponse res) {
+        if (res.status().code() != 200) {
+            ByteBuf buf = Unpooled.copiedBuffer(res.status().toString(), CharsetUtil.UTF_8);
+            res.content().writeBytes(buf);
+            buf.release();
+            HttpHeaderUtil.setContentLength(res, res.content().readableBytes());
+        }
+
+        ChannelFuture f = ctx.channel().writeAndFlush(res);
+        if (!HttpHeaderUtil.isKeepAlive(req) || res.status().code() !=  200) {
+            f.addListener(ChannelFutureListener.CLOSE);
+        }
+    }
+
+    private static  String getWebSocketLocation(FullHttpRequest req) {
+        String location = req.headers().get(HttpHeaderNames.HOST) + WEBSOCKET_PATH;
+        return "ws://" + location;
+    }
+
+    private void handleWebSocketFrame(ChannelHandlerContext ctx, WebSocketFrame frame) {
+        if (frame instanceof CloseWebSocketFrame) {
+            handshaker.close(ctx.channel(), (CloseWebSocketFrame)frame.retain());
+            return;
+        }
+
+        if (frame instanceof PingWebSocketFrame) {
+            ctx.channel().write(new PongWebSocketFrame(frame.content().retain()));
+            return;
+        }
+
+        if (!(frame instanceof TextWebSocketFrame)) {
+            throw new UnsupportedOperationException(String.format("%s frame types not supported", frame.getClass().getName()));
+        }
+
+        broadcast(ctx, frame);
+    }
+
+    private void broadcast(ChannelHandlerContext ctx, WebSocketFrame frame) {
+        if (client.getId() == 0) {
+            Response response = new Response(1001, "没有登陆不难聊天");
+            String msg = new JSONObject(response).toString();
+            ctx.channel().write(new TextWebSocketFrame(msg));
+            return;
+        }
+
+        String request = ((TextWebSocketFrame)frame).text();
+        System.out.println(" 收到 " + ctx.channel() + request);
+
+        Response response = MessageService.sendMessage(client, request);
+        String msg = new JSONObject(response).toString();
+        if (channelGroupMap.containsKey(client.getRoomId())) {
+            channelGroupMap.get(client.getRoomId()).writeAndFlush(new TextWebSocketFrame(msg));
+        }
+    }
+
+
 }

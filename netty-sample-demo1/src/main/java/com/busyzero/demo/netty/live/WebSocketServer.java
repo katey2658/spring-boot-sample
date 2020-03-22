@@ -20,7 +20,7 @@ public class WebSocketServer {
                     .handler(new LoggingHandler(LogLevel.INFO))
                     .childHandler(new WebSocketServerInitializer());
 
-            Channel ch = b.bind().sync().channel();
+            Channel ch = b.bind(port).sync().channel();
             ch.closeFuture().sync();
         } catch (Exception e) {
             bossGroup.shutdownGracefully();
