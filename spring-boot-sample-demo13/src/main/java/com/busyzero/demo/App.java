@@ -1,46 +1,42 @@
 package com.busyzero.demo;
 
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-//@RestController
-//@Configuration
-//@EnableAutoConfiguration
-//@ComponentScan
-//@SpringBootApplication
-//@Configuration
-//@EnableHelloWorld
-//@EnableServer(type = Server.Type.FTP)
+import java.net.URI;
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
+
+@RestController
+@SpringBootApplication
 public class App {
-//
-//    @RequestMapping("/")
-//    private String index() {
-//        return "My Dear";
-//    }
+
+    @RequestMapping("/")
+    private String index() {
+        return "My Dear";
+    }
     public static void main(String[] args) {
-//        SpringApplication.run(WebConfiguration.class, args);
-//        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-//        context.register(App.class);
-//        context.refresh();
-//
-//        Server server = context.getBean(Server.class);
-//        server.start();
-//        server.stop();
-//        context.close();
-
-        MySyncronizedClass syncronizedClass = new MySyncronizedClass();
-        new Thread(() -> {
-            syncronizedClass.a();
-        }).start();
-
-        new Thread(() -> {
-            syncronizedClass.b();
-        }).start();
+        try {
+            StackTraceElement[] elements = (new RuntimeException()).getStackTrace();
+            Class clazz = App.class;
+            for (StackTraceElement element : elements) {
+                System.out.println("x" + element.getClassName() + "#" + element.getMethodName());
+                if (!element.getClassName().equals(App.class.getName()) && element.getMethodName().equals("main")) {
+                    System.out.println(element.getClassName());
+                    clazz = Class.forName(element.getClassName()) ;
+                    continue;
+                }
+            }
+            ProtectionDomain protectionDomain = clazz.getProtectionDomain();
+            CodeSource codeSource = protectionDomain.getCodeSource();
+            URI location = (codeSource != null ? codeSource.getLocation().toURI() : null);
+            String path = (location != null ? location.getSchemeSpecificPart() : null);
+            System.out.println("---- " + path);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        SpringApplication.run(App.class, args);
     }
 }
