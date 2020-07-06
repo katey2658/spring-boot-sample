@@ -16,7 +16,25 @@ public class App {
 
     private static final List<byte[]> LIST = new ArrayList<>();
     private static final ReferenceQueue RQ = new ReferenceQueue();
+
+    public static Object createObject() {
+        Object o = new Object();
+        useObj(o);
+        return o;
+    }
+
+    public static void useObj(Object o) {
+        synchronized (o) {
+
+        }
+    }
     public static void main(String[] args) throws InterruptedException {
+
+        long start = System.currentTimeMillis();
+        for (int i = 0; i <5_000_000 ; i++) {
+            createObject();
+        }
+        System.out.println("cost = " + (System.currentTimeMillis() - start) + "ms");
 //        SpringApplication.run(App.class, args);
 //        MBean mBean = new MBean();
 //        try {
@@ -45,30 +63,30 @@ public class App {
 //        System.gc();
 //        System.out.println(sr.get());
 
-        PhantomReference<MBean> pr = new PhantomReference<MBean>(new MBean(), RQ);
+//        PhantomReference<MBean> pr = new PhantomReference<MBean>(new MBean(), RQ);
 
-        new Thread(() -> {
-            while (true) {
-                LIST.add(new byte[1024 * 1024]);
-                 try {
-                     Thread.sleep(500);
-                 } catch (InterruptedException e) {
-                     System.out.println(e.getMessage());
-                 }
-
-            }
-        }).start();
-
-        new Thread(() -> {
-            while (true) {
-                Reference<? extends MBean> poll = RQ.poll();
-                if (poll != null) {
-                    System.out.println(" phantom " + poll);
-                }
-            }
-        }).start();
-
-        Thread.sleep(5000);
+//        new Thread(() -> {
+//            while (true) {
+//                LIST.add(new byte[1024 * 1024]);
+//                 try {
+//                     Thread.sleep(500);
+//                 } catch (InterruptedException e) {
+//                     System.out.println(e.getMessage());
+//                 }
+//
+//            }
+//        }).start();
+//
+//        new Thread(() -> {
+//            while (true) {
+//                Reference<? extends MBean> poll = RQ.poll();
+//                if (poll != null) {
+//                    System.out.println(" phantom " + poll);
+//                }
+//            }
+//        }).start();
+//
+//        Thread.sleep(5000);
     }
 
     public static class MBean {
