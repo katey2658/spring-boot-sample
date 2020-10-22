@@ -3,10 +3,7 @@ package com.busyzero.sample.demo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +23,7 @@ public class App {
         return "Hello Json";
     }
 
-    @RequestMapping(value = "/data", method = RequestMethod.GET)
+    @GetMapping(value = "/data")
     public Map getDat() {
         Map<String, Object> data1 = new HashMap<>();
         data1.put("name", 1001);

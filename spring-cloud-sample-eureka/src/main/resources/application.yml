@@ -1,25 +1,26 @@
 server:
-  port: 8888
+  port: 8080
 
 spring:
   application:
-    name: spring-cloud-stream
-  cloud:
-    stream:
-      kafka:
-        binder:
-          brokers: 172.16.23.30:9092
-          zk-nodes: 172.16.23.30:2181
-      bindings:
-        output:
-          destination: org-change
-          content-type: application/json
-          auto-add-partitions: true
-          auto-create-topics: true
-          group: s1
-          min-partition-count: 1
-          producer:
-            partitionCount: 1
-  z
+    name: eureka-server
+
+eureka:
+  instance:
+    hostname: eureka-center
+    appname: 注册中心
+  client:
+    registerWithEureka: false # 单点的时候设置为 false 禁止注册自身
+    fetchRegistry: false
+    serviceUrl:
+      defaultZone: http://localhost:8080/eureka
+  server:
+    enableSelfPreservation: false
+    evictionIntervalTimerInMs: 4000
+
+
+
+
+
 
 

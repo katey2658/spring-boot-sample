@@ -10,10 +10,10 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Hello world!
  */
-@EnableAutoConfiguration
-@ComponentScan
-@SpringBootConfiguration
-//@SpringBootApplication
+//@EnableAutoConfiguration
+//@ComponentScan
+//@SpringBootConfiguration
+@SpringBootApplication
 public class App {
     public static void main(String[] args) {
         SpringApplication.run(App.class, args);
