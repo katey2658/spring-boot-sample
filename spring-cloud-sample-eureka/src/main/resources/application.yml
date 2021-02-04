@@ -3,17 +3,21 @@ server:
 
 spring:
   application:
-    name: eureka-server
+    name: consul-server
+  security:
+    user:
+      name: dev
+      password: wangdong1995
 
 eureka:
   instance:
-    hostname: eureka-center
+    hostname: consul-center
     appname: 注册中心
   client:
     registerWithEureka: false # 单点的时候设置为 false 禁止注册自身
     fetchRegistry: false
     serviceUrl:
-      defaultZone: http://localhost:8080/eureka
+      defaultZone: http://localhost:8080/consul
   server:
     enableSelfPreservation: false
     evictionIntervalTimerInMs: 4000
